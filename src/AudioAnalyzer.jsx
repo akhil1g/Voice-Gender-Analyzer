@@ -1,12 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import fft from 'fft-js';
+import { FaPlay, FaPause } from 'react-icons/fa';
+import Loader from './Loader';
 
 const AudioAnalyzer = () => {
   const [results, setResults] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(new Audio());
+  const [trying,setIsTrying]=useState(true);
+
+
+  const togglePlay = () => {
+    if (!isPlaying) {
+      audioRef.current.play();
+      setIsPlaying(true);
+    } else {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
 
   const analyzeAudio = async (files) => {
     try {
       console.log(files);
+      const fileURL = URL.createObjectURL(files[0]);
+      audioRef.current.src = fileURL;
+
+      // Play audio after analysis
+      audioRef.current.play();
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       console.log(audioContext)
       const promises = Array.from(files).map((file) => {
@@ -76,6 +97,7 @@ const AudioAnalyzer = () => {
               const gender = Math.abs(maxFrequency - 122) > Math.abs(maxFrequency - 212) ? 'female' : 'male';
 
               // Resolve the promise with the analysis results
+              setIsTrying(true);
               resolve({ name: file.name, maxFrequency: maxFrequency.toFixed(2), gender });
             } catch (error) {
               reject(error);
@@ -98,6 +120,20 @@ const AudioAnalyzer = () => {
   return (
     <div>
       <input type="file" accept="audio/*" multiple onChange={(e) => analyzeAudio(e.target.files)} />
+      {/* {
+        !trying ? (
+          <div>
+          <Loader/>
+          </div>
+        ):(<div></div>)
+      } */}
+      <div className="controls">
+        {isPlaying ? (
+          <button onClick={togglePlay}><FaPause /></button>
+        ) : (
+          <button onClick={togglePlay}><FaPlay /></button>
+        )}
+      </div>
       <div className="results-container">
         {results.map((result, index) => (
           <div key={index} className="result-item">
