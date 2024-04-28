@@ -118,7 +118,9 @@ const AudioAnalyzer = () => {
                 }
               }
               const maxFrequency = maxFrequencyIndex * audioContext.sampleRate / fftSize;
-              const gender = Math.abs(maxFrequency - 122) > Math.abs(maxFrequency - 212) ? 'female' : 'male';
+              let gender = Math.abs(maxFrequency - 122) > Math.abs(maxFrequency - 212) ? 'female' : 'male';
+              if(maxFrequency>2000) gender = 'female'
+              else gender = 'male'
               resolve({ name: file.name, maxFrequency: maxFrequency.toFixed(2), gender });
             } catch (error) {
               reject(error);
